@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String          @id @default(uuid()) @db.VarChar(255)
+  username            String          @unique
+  email               String          @unique
+  password            String?
+  gender              Gender
+  lastOnline          DateTime?
+  isVerified          Boolean         @default(false)
+  generatedImageCount Int             @default(0)
+  accountStatus       AccountStatus   @default(INACTIVE)
+  profilePictureId    String?
+  Profile             File?           @relation(fields: [profilePictureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  Location            Location?       @relation(fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  locationId          String?
+  GenerateImage       GenerateImage[]
+}
+
+model GenerateImage {
+  id               String   @id @default(uuid()) @db.VarChar(255)
+  content          String   @db.LongText()
+  status           Status   @default(ACTIVE)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  generatedImageId String
+  GeneratedImage   File?    @relation(fields: [generatedImageId], references: [id])
+  generatedById    String
+  GeneratedBy      User?    @relation(fields: [generatedById], references: [id])
+}
+
+model File {
+  id            String          @id @default(uuid()) @db.VarChar(255)
+  name          String
+  path          String
+  imageStatus   ImageStatus
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  User          User[]
+  GenerateImage GenerateImage[]
+}
+
+model Location {
+  id         String   @id @unique @default(uuid())
+  city       String   @db.VarChar(150)
+  status     Status   @default(ACTIVE)
+  countryId  Int
+  country    Country  @relation(fields: [countryId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  User       User[]
+}
+
+model Country {
+  id         Int        @id
+  name       String     @db.VarChar(100)
+  status     Status     @default(ACTIVE)
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  Location   Location[]
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum ImageStatus {
+  PROFILE
+  GENERATED
+}
+
+enum Status {
+  ACTIVE
+  PENDING
+  DELETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  GENDERQUEER
+  GENDERFLUID
+  TRANSGENDER
+  CISGENDER
+  OTHER
+}

@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  app:
+    container_name: app
+    networks:
+      - backend
+    build: .
+    tty: true
+    command: npm run start:docker
+    ports:
+      - '5500:5500'
+    volumes:
+      - .:/app
+    depends_on:
+      - mysql
+    env_file:
+      - ./.env
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    networks:
+      - backend
+    ports:
+      - '3306:3306'
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 0989075mmtn
+    volumes:
+      - /var/lib/mysql
+networks:
+  backend:
+    driver: bridge
