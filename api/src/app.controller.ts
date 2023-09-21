@@ -15,5 +15,4 @@ export class AppController {
   seeUploadedFile(@Param('fileName') name: string, @Res() res: Response) {
     return res.sendFile(name, { root: `./uploads/generatedImages/` });
   }
-
 }

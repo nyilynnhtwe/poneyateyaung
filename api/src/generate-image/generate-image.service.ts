@@ -12,82 +12,84 @@ import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class GenerateImageService {
+  constructor(private prismaService: PrismaService) {}
 
-  constructor(private prismaService: PrismaService) {
-
-  }
-
-  async create(req: IAuthRequest, createGenerateImageDto: CreateGenerateImageDto) {
+  async create(
+    req: IAuthRequest,
+    createGenerateImageDto: CreateGenerateImageDto,
+  ) {
     // try {
     // const { filename, path } = file;
     try {
-      const requestedImageUrl = await generateImageUrl(createGenerateImageDto.content,createGenerateImageDto.isLandscape);
+      const requestedImageUrl = await generateImageUrl(
+        createGenerateImageDto.content,
+        createGenerateImageDto.isLandscape,
+      );
       const imageUrl = requestedImageUrl[0];
       // const imageUrl = 'https://replicate.delivery/pbxt/1ymOA6nwBYIWLxrX94fkQ0duazsM3ZVF3FhLvIIysQKVlHuIA/out-0.png';
-      const response = await axios(
-        {
-          url: imageUrl,
-          method: 'GET',
-          responseType: 'stream'
-        }
-      )
+      const response = await axios({
+        url: imageUrl,
+        method: 'GET',
+        responseType: 'stream',
+      });
 
-      const filterArr = imageUrl.split("/");
+      const filterArr = imageUrl.split('/');
       const originalImageName = filterArr[filterArr.length - 1];
-      const originalImageType = originalImageName.split(".")[1];
+      const originalImageType = originalImageName.split('.')[1];
 
-      const imageName = (await this.imageNameGenerator()) +"."+ originalImageType;
-      const path = "uploads/generatedImages/" + imageName;
-      const generatedImage = await this.prismaService.generateImage.create(
-        {
-          data: {
-            content: createGenerateImageDto.content,
-            GeneratedImage: {
-              create: {
-                imageStatus: "GENERATED",
-                name: imageName,
-                path:
-                  process.env.NODE_ENV === 'development'
-                    ? `${req.protocol}://${req.hostname}:5500/api/file/${path}`
-                    : `${req.protocol}://${req.hostname}/api/file/${path}`,
-              },
+      const imageName =
+        (await this.imageNameGenerator()) + '.' + originalImageType;
+      const path = 'uploads/generatedImages/' + imageName;
+      const generatedImage = await this.prismaService.generateImage.create({
+        data: {
+          content: createGenerateImageDto.content,
+          GeneratedImage: {
+            create: {
+              imageStatus: 'GENERATED',
+              name: imageName,
+              path:
+                process.env.NODE_ENV === 'development'
+                  ? `${req.protocol}://${req.hostname}:5500/api/file/${path}`
+                  : `${req.protocol}://${req.hostname}/api/file/${path}`,
             },
-            GeneratedBy:
-            {
-              connect:
-              {
-                id: req.user.id
-              }
-            }
           },
-        }
-      )
+          GeneratedBy: {
+            connect: {
+              id: req.user.id,
+            },
+          },
+        },
+      });
 
-      const outputPath = "./uploads/generatedImages/";
-      fs.mkdir(outputPath,
+      const outputPath = './uploads/generatedImages/';
+      fs.mkdir(
+        outputPath,
         {
-          recursive: true
-        }, async () => {
-          const writer = await fs.createWriteStream("./uploads/generatedImages/" + imageName);
+          recursive: true,
+        },
+        async () => {
+          const writer = await fs.createWriteStream(
+            './uploads/generatedImages/' + imageName,
+          );
           console.log(writer);
-          
+
           response.data.pipe(writer);
 
           return new Promise((resolve, reject) => {
             writer.on('finish', resolve);
             writer.on('error', reject);
           });
-        }); //
-        if (generatedImage) {
-          return CustomResponser({
-            statusCode: 200,
-            message: 'User generated image successfully',
-            devMessage: 'user-generated-image-successfully',
-            body: generatedImage,
-          });
-        }
-    } 
-    catch (err) {
+        },
+      ); //
+      if (generatedImage) {
+        return CustomResponser({
+          statusCode: 200,
+          message: 'User generated image successfully',
+          devMessage: 'user-generated-image-successfully',
+          body: generatedImage,
+        });
+      }
+    } catch (err) {
       throw new HttpException(
         { message: 'Internal server 111 error occurred', devMessage: err },
         500,
@@ -95,21 +97,17 @@ export class GenerateImageService {
     }
   }
 
-  async findAll(userId:string) {
+  async findAll(userId: string) {
     try {
-      const images = await this.prismaService.generateImage.findMany(
-        {
-          where:
-          {
-            generatedById : userId
-          },
-          include:
-          {
-            GeneratedBy: true,
-            GeneratedImage: true
-          }
-        }
-      )
+      const images = await this.prismaService.generateImage.findMany({
+        where: {
+          generatedById: userId,
+        },
+        include: {
+          GeneratedBy: true,
+          GeneratedImage: true,
+        },
+      });
       if (images) {
         return CustomResponser({
           statusCode: 200,
@@ -117,13 +115,12 @@ export class GenerateImageService {
           devMessage: 'fetch-generated-images-successfully',
           body: images,
         });
-      }
-      else {
+      } else {
         return CustomResponser({
           statusCode: 200,
           message: 'can not fetch generated image successfully',
           devMessage: 'can-not-fetch-generated-image-successfully',
-          body: images
+          body: images,
         });
       }
     } catch (error) {
@@ -131,22 +128,17 @@ export class GenerateImageService {
     }
   }
 
-
-  async findOne(imageId:string) {
+  async findOne(imageId: string) {
     try {
-      const images = await this.prismaService.generateImage.findMany(
-        {
-          where:
-          {
-            id : imageId
-          },
-          include:
-          {
-            GeneratedBy: true,
-            GeneratedImage: true
-          }
-        }
-      )
+      const images = await this.prismaService.generateImage.findMany({
+        where: {
+          id: imageId,
+        },
+        include: {
+          GeneratedBy: true,
+          GeneratedImage: true,
+        },
+      });
       if (images) {
         return CustomResponser({
           statusCode: 200,
@@ -154,13 +146,12 @@ export class GenerateImageService {
           devMessage: 'fetch-generated-image-successfully',
           body: images,
         });
-      }
-      else {
+      } else {
         return CustomResponser({
           statusCode: 200,
           message: 'can not fetch generated image successfully',
           devMessage: 'can-not-fetch-generated-image-successfully',
-          body: images
+          body: images,
         });
       }
     } catch (error) {
@@ -169,7 +160,7 @@ export class GenerateImageService {
   }
 
   async imageNameGenerator() {
-    let name = "";
+    let name = '';
     for (let index = 0; index < 20; index++) {
       name += `${Math.floor(Math.random() * 9)}`;
     }

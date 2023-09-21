@@ -1,7 +1,7 @@
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
-export const fileStorage = (destination : string) => ({  
+export const fileStorage = (destination: string) => ({
   storage: diskStorage({
     destination: `./uploads/${destination}`,
     filename: (req, file, cb) => {

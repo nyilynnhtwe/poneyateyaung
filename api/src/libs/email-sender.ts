@@ -1,66 +1,50 @@
 import * as nodemailer from 'nodemailer';
 
-
 type EmailSenderInterface = {
-    subject: string;
-    token: string;
-    from: string;
-    to: string;
-    html: string
-}
-
-
-export const  EmailSender = async (
-    {
-        email,
-        token
-    }
-) : Promise<any> => {
-
-
-    const data : EmailSenderInterface = 
-    {
-        subject : "Email Verification",
-        from    : process.env.MAIL_SENDER_EMAIL,
-        to      : email,
-        html    : await GenerateEmailHtmlBody(token),
-        token   : token
-    };
-
-    let mailOptions = {
-        from: data.from, 
-        to: data.to, // list of receivers (separated by ,)
-        subject: data.subject, 
-        html: data.html
-      };
-      
-    let transporter = nodemailer.createTransport({
-        // host: process.env.MAIL_SENDER_HOST,
-        // port: process.env.MAIL_SENDER_PORT,
-        // secure: process.env.MAIL_SENDER_SECURE, // true for 465, false for other ports
-        service: process.env.MAIL_SENDER_SERVICE,
-        auth: {
-            user: process.env.MAIL_SENDER_EMAIL,
-            pass: process.env.MAIL_SENDER_PASSWORD
-        },
-    });
-
-    await transporter.sendMail(mailOptions, async (error, info) => {
-        if (error) {
-            console.log(`Message sent: ${error}`);
-        }
-        console.log(`Message sent ${info.messageId}`);
-        
-    });
+  subject: string;
+  token: string;
+  from: string;
+  to: string;
+  html: string;
 };
 
+export const EmailSender = async ({ email, token }): Promise<any> => {
+  const data: EmailSenderInterface = {
+    subject: 'Email Verification',
+    from: process.env.MAIL_SENDER_EMAIL,
+    to: email,
+    html: await GenerateEmailHtmlBody(token),
+    token: token,
+  };
 
+  const mailOptions = {
+    from: data.from,
+    to: data.to, // list of receivers (separated by ,)
+    subject: data.subject,
+    html: data.html,
+  };
 
+  const transporter = nodemailer.createTransport({
+    // host: process.env.MAIL_SENDER_HOST,
+    // port: process.env.MAIL_SENDER_PORT,
+    // secure: process.env.MAIL_SENDER_SECURE, // true for 465, false for other ports
+    service: process.env.MAIL_SENDER_SERVICE,
+    auth: {
+      user: process.env.MAIL_SENDER_EMAIL,
+      pass: process.env.MAIL_SENDER_PASSWORD,
+    },
+  });
 
+  await transporter.sendMail(mailOptions, async (error, info) => {
+    if (error) {
+      console.log(`Message sent: ${error}`);
+    }
+    console.log(`Message sent ${info.messageId}`);
+  });
+};
 
-const GenerateEmailHtmlBody = async(token : string) : Promise<string> =>
-{
-    return `
+const GenerateEmailHtmlBody = async (token: string): Promise<string> => {
+  return `
     <!DOCTYPE html>
 <html lang="en">
 
@@ -89,4 +73,4 @@ const GenerateEmailHtmlBody = async(token : string) : Promise<string> =>
 </body>
 
 </html>`;
-}
+};
