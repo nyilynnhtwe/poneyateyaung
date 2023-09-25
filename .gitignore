@@ -1,6 +1,7 @@
 # custom
 /uploads
 /.env
+/notes.txt
 
 # compiled output
 /dist
