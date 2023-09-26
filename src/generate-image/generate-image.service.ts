@@ -130,7 +130,7 @@ export class GenerateImageService {
 
   async findOne(imageId: string) {
     try {
-      const images = await this.prismaService.generateImage.findMany({
+      const image = await this.prismaService.generateImage.findUnique({
         where: {
           id: imageId,
         },
@@ -139,19 +139,19 @@ export class GenerateImageService {
           GeneratedImage: true,
         },
       });
-      if (images) {
+      if (image) {
         return CustomResponser({
           statusCode: 200,
           message: 'fetch generated image successfully',
           devMessage: 'fetch-generated-image-successfully',
-          body: images,
+          body: image,
         });
       } else {
         return CustomResponser({
           statusCode: 200,
           message: 'can not fetch generated image successfully',
           devMessage: 'can-not-fetch-generated-image-successfully',
-          body: images,
+          body: image,
         });
       }
     } catch (error) {
