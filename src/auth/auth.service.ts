@@ -23,6 +23,14 @@ export class AuthService {
       },
     });
     if (user) {
+      if (!user.password) {
+        return CustomResponser({
+          statusCode: 404,
+          devMessage: 'have-not-been-registered-yet',
+          message: 'Have not been registered yet',
+          body: null,
+        });
+      }
       const isPasswordMatch = verify(user.password, password);
       if (!isPasswordMatch) {
         return CustomResponser({
@@ -44,9 +52,8 @@ export class AuthService {
 
         const payload = {
           id: user.id,
-          name: user.username,
+          role: user.role,
         };
-
         const token = {
           accesstoken: await this.jwtService.signAsync(payload, {
             secret: jwtConstants.secret,
@@ -111,10 +118,11 @@ export class AuthService {
         name: recordedUser.username,
       };
 
+      // generate jwt token to send with email ( will live about 2h )
       const token = {
         access_token: await this.jwtService.signAsync(payload, {
           secret: jwtConstants.secret,
-          expiresIn: '1d',
+          expiresIn: '2h',
         }),
       };
       if (token) {

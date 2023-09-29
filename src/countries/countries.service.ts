@@ -19,7 +19,7 @@ export class CountriesService {
       });
     } else {
       return CustomResponser({
-        devMessage: 'country-list-did-not-fetchsuccessfully',
+        devMessage: 'country-list-did-not-fetch-successfully',
         message: 'Country list did not fetch  successfully',
         body: null,
         statusCode: 403,

@@ -14,11 +14,11 @@ model User {
   id                  String          @id @default(uuid()) @db.VarChar(255)
   username            String          @unique
   email               String          @unique
+  role                Role            @default(MEMBER)
   password            String?
   gender              Gender
   lastOnline          DateTime?
   isVerified          Boolean         @default(false)
-  generatedImageCount Int             @default(0)
   accountStatus       AccountStatus   @default(INACTIVE)
   profilePictureId    String?
   Profile             File?           @relation(fields: [profilePictureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -99,4 +99,9 @@ enum Gender {
   TRANSGENDER
   CISGENDER
   OTHER
+}
+
+enum Role {
+  ADMIN
+  MEMBER
 }

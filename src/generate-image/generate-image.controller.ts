@@ -52,6 +52,7 @@ export class GenerateImageController {
   @Get(':id')
   @ApiOperation({ summary: 'Get generated image by id' })
   findOne(@Param('id') id: string) {
+    console.log(id);
     return this.generateImageService.findOne(id);
   }
 

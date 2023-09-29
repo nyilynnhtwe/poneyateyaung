@@ -71,8 +71,6 @@ export class GenerateImageService {
           const writer = await fs.createWriteStream(
             './uploads/generatedImages/' + imageName,
           );
-          console.log(writer);
-
           response.data.pipe(writer);
 
           return new Promise((resolve, reject) => {
@@ -130,13 +128,19 @@ export class GenerateImageService {
 
   async findOne(imageId: string) {
     try {
-      const image = await this.prismaService.generateImage.findUnique({
+      const image = await this.prismaService.file.findUnique({
         where: {
           id: imageId,
         },
-        include: {
-          GeneratedBy: true,
-          GeneratedImage: true,
+        select: {
+          name: true,
+          path: true,
+          createdAt: true,
+          User: {
+            select: {
+              username: true,
+            },
+          },
         },
       });
       if (image) {
