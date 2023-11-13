@@ -6,32 +6,34 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                  String          @id @default(uuid()) @db.VarChar(255)
-  username            String          @unique
-  email               String          @unique
-  role                Role            @default(MEMBER)
-  password            String?
-  gender              Gender
-  lastOnline          DateTime?
-  isVerified          Boolean         @default(false)
-  accountStatus       AccountStatus   @default(INACTIVE)
-  profilePictureId    String?
-  Profile             File?           @relation(fields: [profilePictureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  Location            Location?       @relation(fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  locationId          String?
-  GenerateImage       GenerateImage[]
+  id               String          @id @default(uuid()) @db.VarChar(255)
+  username         String          @unique
+  email            String          @unique
+  role             Role            @default(MEMBER)
+  password         String?
+  gender           Gender
+  credit           Int             @default(5)
+  lastOnline       DateTime?
+  isVerified       Boolean         @default(false)
+  accountStatus    AccountStatus   @default(INACTIVE)
+  profilePictureId String?
+  Profile          File?           @relation(fields: [profilePictureId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  Location         Location?       @relation(fields: [locationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  locationId       String?
+  GenerateImage    GenerateImage[]
+  UserIpMapping    UserIpMapping[]
 }
 
 model GenerateImage {
   id               String   @id @default(uuid()) @db.VarChar(255)
-  content          String   @db.LongText()
+  content          String   @db.Text()
   status           Status   @default(ACTIVE)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -70,6 +72,16 @@ model Country {
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
   Location   Location[]
+}
+
+model UserIpMapping {
+  id         String   @id @unique @default(uuid())
+  ip         String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  status     Status   @default(ACTIVE)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 enum AccountStatus {

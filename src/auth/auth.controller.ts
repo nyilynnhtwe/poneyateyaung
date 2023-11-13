@@ -31,6 +31,7 @@ import { IAuthRequest } from 'src/libs/auth-request';
 import { fileStorage } from 'src/libs/file-store';
 import { AuthGuard } from './auth.guard';
 import { FileSizeValidationPipe } from 'src/libs/file-size-validate';
+import { Request as ExpressRequest } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -40,8 +41,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User Login' })
   @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto.email, signInDto.password);
+  signIn(@Request() req: ExpressRequest, @Body() signInDto: SignInDto) {
+    return this.authService.signIn(req, signInDto.email, signInDto.password);
   }
 
   @ApiTags('Auth')

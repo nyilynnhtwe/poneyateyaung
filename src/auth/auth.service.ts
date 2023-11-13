@@ -9,6 +9,7 @@ import { hash, verify } from 'argon2';
 import { GenerateToken } from 'src/libs/generate-verify-token';
 import { IAuthRequest } from 'src/libs/auth-request';
 import * as fs from 'fs';
+import { Request as ExpressRequest } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +17,20 @@ export class AuthService {
     private prismaService: PrismaService,
     private jwtService: JwtService,
   ) {}
-  async signIn(email: string, password: string): Promise<any> {
+  async signIn(
+    req: ExpressRequest,
+    email: string,
+    password: string,
+  ): Promise<any> {
     const user = await this.prismaService.user.findFirst({
       where: {
         email: email,
+      },
+    });
+    await this.prismaService.userIpMapping.create({
+      data: {
+        ip: req.socket.remoteAddress,
+        userId: user.id,
       },
     });
     if (user) {
@@ -60,6 +71,8 @@ export class AuthService {
             expiresIn: '1d',
           }),
         };
+        console.log(1);
+
         return CustomResponser({
           statusCode: 201,
           devMessage: 'user-authentication-successuful',

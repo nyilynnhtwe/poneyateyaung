@@ -36,7 +36,7 @@ export class GenerateImageController {
     type: CreateGenerateImageDto,
   })
   @ApiOperation({ summary: 'Generate image here' })
-  async userUpdateProfile(
+  async generateImage(
     @Request() req: IAuthRequest,
     @Body() createGenerateImageDto: CreateGenerateImageDto,
   ): Promise<any> {

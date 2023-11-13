@@ -21,75 +21,99 @@ export class GenerateImageService {
     // try {
     // const { filename, path } = file;
     try {
-      const requestedImageUrl = await generateImageUrl(
-        createGenerateImageDto.content,
-        createGenerateImageDto.isLandscape,
-      );
-      const imageUrl = requestedImageUrl[0];
-      // const imageUrl = 'https://replicate.delivery/pbxt/1ymOA6nwBYIWLxrX94fkQ0duazsM3ZVF3FhLvIIysQKVlHuIA/out-0.png';
-      const response = await axios({
-        url: imageUrl,
-        method: 'GET',
-        responseType: 'stream',
+      const requestUser = await this.prismaService.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
       });
+      if (requestUser.credit > 0) {
+        const requestedImageUrl = await generateImageUrl(
+          createGenerateImageDto.content,
+          createGenerateImageDto.isLandscape,
+        );
+        const imageUrl = requestedImageUrl[0];
+        // const imageUrl = 'https://replicate.delivery/pbxt/1ymOA6nwBYIWLxrX94fkQ0duazsM3ZVF3FhLvIIysQKVlHuIA/out-0.png';
+        const response = await axios({
+          url: imageUrl,
+          method: 'GET',
+          responseType: 'stream',
+        });
 
-      const filterArr = imageUrl.split('/');
-      const originalImageName = filterArr[filterArr.length - 1];
-      const originalImageType = originalImageName.split('.')[1];
+        const filterArr = imageUrl.split('/');
+        const originalImageName = filterArr[filterArr.length - 1];
+        const originalImageType = originalImageName.split('.')[1];
 
-      const imageName =
-        (await this.imageNameGenerator()) + '.' + originalImageType;
-      const path = 'uploads/generatedImages/' + imageName;
-      const generatedImage = await this.prismaService.generateImage.create({
-        data: {
-          content: createGenerateImageDto.content,
-          GeneratedImage: {
-            create: {
-              imageStatus: 'GENERATED',
-              name: imageName,
-              path:
-                process.env.NODE_ENV === 'development'
-                  ? `${req.protocol}://${req.hostname}:5500/api/file/${path}`
-                  : `${req.protocol}://${req.hostname}/api/file/${path}`,
+        const imageName =
+          (await this.imageNameGenerator()) + '.' + originalImageType;
+        const path = 'uploads/generatedImages/' + imageName;
+        const generatedImage = await this.prismaService.generateImage.create({
+          data: {
+            content: createGenerateImageDto.content,
+            GeneratedImage: {
+              create: {
+                imageStatus: 'GENERATED',
+                name: imageName,
+                path:
+                  process.env.NODE_ENV === 'development'
+                    ? `${req.protocol}://${req.hostname}:5500/api/file/${path}`
+                    : `${req.protocol}://${req.hostname}/api/file/${path}`,
+              },
+            },
+            GeneratedBy: {
+              connect: {
+                id: req.user.id,
+              },
             },
           },
-          GeneratedBy: {
-            connect: {
+        });
+
+        const outputPath = './uploads/generatedImages/';
+        fs.mkdir(
+          outputPath,
+          {
+            recursive: true,
+          },
+          async () => {
+            const writer = await fs.createWriteStream(
+              './uploads/generatedImages/' + imageName,
+            );
+            response.data.pipe(writer);
+
+            return new Promise((resolve, reject) => {
+              writer.on('finish', resolve);
+              writer.on('error', reject);
+            });
+          },
+        ); //
+        if (generatedImage) {
+          this.prismaService.user.update({
+            data: {
+              credit: {
+                decrement: 1,
+              },
+            },
+            where: {
               id: req.user.id,
             },
-          },
-        },
-      });
-
-      const outputPath = './uploads/generatedImages/';
-      fs.mkdir(
-        outputPath,
-        {
-          recursive: true,
-        },
-        async () => {
-          const writer = await fs.createWriteStream(
-            './uploads/generatedImages/' + imageName,
-          );
-          response.data.pipe(writer);
-
-          return new Promise((resolve, reject) => {
-            writer.on('finish', resolve);
-            writer.on('error', reject);
           });
-        },
-      ); //
-      if (generatedImage) {
+          return CustomResponser({
+            statusCode: 200,
+            message: 'User generated image successfully',
+            devMessage: 'user-generated-image-successfully',
+            body: generatedImage,
+          });
+        }
+      } else {
         return CustomResponser({
           statusCode: 200,
-          message: 'User generated image successfully',
-          devMessage: 'user-generated-image-successfully',
-          body: generatedImage,
+          body: null,
+          message: 'Your credit point is not enough.',
+          devMessage: 'Your credit point is not enough.',
         });
       }
     } catch (err) {
       throw new HttpException(
-        { message: 'Internal server 111 error occurred', devMessage: err },
+        { message: 'Internal server error occurred', devMessage: err },
         500,
       );
     }
