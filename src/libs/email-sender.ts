@@ -25,10 +25,10 @@ export const EmailSender = async ({ email, token }): Promise<any> => {
   };
 
   const transporter = nodemailer.createTransport({
-    // host: process.env.MAIL_SENDER_HOST,
-    // port: process.env.MAIL_SENDER_PORT,
-    // secure: process.env.MAIL_SENDER_SECURE, // true for 465, false for other ports
-    service: process.env.MAIL_SENDER_SERVICE,
+    // host: 'smtp-mail.outlook.com', // hostname
+    // secureConnection: false, // TLS requires secureConnection to be false
+    // port: 587, // port for secure SMTP
+    service: 'Gmail',
     auth: {
       user: process.env.MAIL_SENDER_EMAIL,
       pass: process.env.MAIL_SENDER_PASSWORD,

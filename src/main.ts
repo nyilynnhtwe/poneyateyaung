@@ -38,6 +38,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-  await app.listen(PORT, '192.168.68.123');
+  await app.listen(PORT);
 }
 bootstrap();

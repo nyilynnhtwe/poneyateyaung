@@ -86,7 +86,7 @@ export class GenerateImageService {
           },
         ); //
         if (generatedImage) {
-          this.prismaService.user.update({
+          await this.prismaService.user.update({
             data: {
               credit: {
                 decrement: 1,
