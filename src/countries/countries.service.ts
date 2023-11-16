@@ -9,7 +9,12 @@ export class CountriesService {
   constructor(private prismaService: PrismaService) {}
 
   async findAll() {
-    const countries = await this.prismaService.country.findMany({});
+    const countries = await this.prismaService.country.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
     if (countries.length > 0) {
       return CustomResponser({
         devMessage: 'country-list-fetched-successfully',

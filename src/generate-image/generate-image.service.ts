@@ -65,6 +65,9 @@ export class GenerateImageService {
               },
             },
           },
+          include: {
+            GeneratedImage: true,
+          },
         });
 
         const outputPath = './uploads/generatedImages/';
