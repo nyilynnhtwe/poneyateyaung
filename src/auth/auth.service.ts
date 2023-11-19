@@ -27,9 +27,13 @@ export class AuthService {
         email: email,
       },
     });
+    const ips =
+      typeof req.headers['x-forwarded-for'] === 'string'
+        ? req.headers['x-forwarded-for']
+        : req.headers['x-forwarded-for'].join('');
     await this.prismaService.userIpMapping.create({
       data: {
-        ip: req.ip,
+        ip: ips,
         userId: user.id,
       },
     });
