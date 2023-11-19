@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { GenerateImageModule } from './generate-image/generate-image.module';
 import { CountriesModule } from './countries/countries.module';
 import { AdminDashBoardModule } from './admin-dashboard/admin-dashboard.module';
+import { ExpressAdapter } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -14,6 +15,17 @@ import { AdminDashBoardModule } from './admin-dashboard/admin-dashboard.module';
     AdminDashBoardModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: ExpressAdapter,
+      useValue: new ExpressAdapter(),
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private readonly expressAdapter: ExpressAdapter) {
+    // Enable trust proxy
+    this.expressAdapter.getInstance().set('trust proxy', 1);
+  }
+}

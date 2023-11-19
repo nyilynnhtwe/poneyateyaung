@@ -6,10 +6,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import morgan from 'morgan';
 import fs from 'fs';
 import path from 'path';
+import { ExpressAdapter } from '@nestjs/platform-express';
 
 async function bootstrap() {
+  const expressAdapter = new ExpressAdapter();
   //create app from app module
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, expressAdapter);
 
   // setting up things on app
   app.setGlobalPrefix('api');
