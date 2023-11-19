@@ -29,7 +29,7 @@ export class AuthService {
     });
     await this.prismaService.userIpMapping.create({
       data: {
-        ip: req.socket.remoteAddress,
+        ip: req.ip,
         userId: user.id,
       },
     });
