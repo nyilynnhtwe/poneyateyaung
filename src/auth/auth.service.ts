@@ -101,7 +101,11 @@ export class AuthService {
       },
       include: {
         Location: true,
-        GenerateImage: true,
+        GenerateImage: {
+          include: {
+            GeneratedImage: true,
+          },
+        },
       },
     });
     if (user) {
