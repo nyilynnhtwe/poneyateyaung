@@ -32,6 +32,9 @@ import { fileStorage } from 'src/libs/file-store';
 import { AuthGuard } from './auth.guard';
 import { FileSizeValidationPipe } from 'src/libs/file-size-validate';
 import { Request as ExpressRequest } from 'express';
+import { RolesGuard } from './roles.guard';
+import { Roles } from './roles.decorator';
+import { Role } from './interface/role.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -43,6 +46,18 @@ export class AuthController {
   @Post('login')
   signIn(@Request() req: ExpressRequest, @Body() signInDto: SignInDto) {
     return this.authService.signIn(req, signInDto.email, signInDto.password);
+  }
+
+  @ApiTags('Auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MEMBER)
+  @ApiOperation({ summary: 'User Login' })
+  @Get('info')
+  fetchUserInfo(@Request() req: IAuthRequest) {
+    const userId = req.user.id;
+    return this.authService.fetchUserInfo(userId);
   }
 
   @ApiTags('Auth')

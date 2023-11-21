@@ -80,7 +80,7 @@ model UserIpMapping {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   status     Status   @default(ACTIVE)
-  created_at DateTime @default(now())
+  created_at DateTime @default(dbgenerated())
   updated_at DateTime @updatedAt
 }
 

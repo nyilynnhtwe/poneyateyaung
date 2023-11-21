@@ -94,6 +94,32 @@ export class AuthService {
     });
   }
 
+  async fetchUserInfo(userId: string): Promise<any> {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id: userId,
+      },
+      include: {
+        Location: true,
+        GenerateImage: true,
+      },
+    });
+    if (user) {
+      return CustomResponser({
+        statusCode: 404,
+        devMessage: 'user-infos-have-been-fetched-successfully',
+        message: 'User info have been fetched successfully.',
+        body: user,
+      });
+    }
+    return CustomResponser({
+      statusCode: 403,
+      devMessage: 'user-infos-have-not-been-fetched-successfully',
+      message: 'User infos have been fetched successfully',
+      body: null,
+    });
+  }
+
   async register(registerDto: RegisterDto) {
     const alreadyExistedUser = await this.prismaService.user.findUnique({
       where: {
